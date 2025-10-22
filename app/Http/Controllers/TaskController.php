@@ -9,10 +9,20 @@ use Illuminate\Support\Facades\Auth;
 
 class TaskController extends Controller
 {
-    public function index() {
-        $tasks = Task::where('user_id', Auth::id())->with('category')->get();
-        return view('tasks.index', compact('tasks'));
+    public function index(Request $request) {
+    $query = Task::where('user_id', auth()->id());
+
+    if($request->search) {
+        $query->where('title','like','%'.$request->search.'%');
     }
+    if($request->status) {
+        $query->where('status', $request->status);
+    }
+
+    $tasks = $query->orderBy('due_date')->paginate(10);
+    return view('tasks.index', compact('tasks'));
+}
+
 
     public function create() {
         $categories = Category::all();
